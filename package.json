@@ -1,13 +1,15 @@
 {
     "name": "breakout-area",
     "version": "1.0.0",
+    "workspaces": [
+        "client",
+        "server"
+    ],
     "scripts": {
-        "postinstall": "cd server && npm install && cd ../client && npm install",
-        "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-        "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
-        "seed": "cd server && node seed.js",
-        "build": "cd client && npm install && npm run build",
-        "start": "cd server && npm start"
+        "dev": "concurrently \"npm run dev --workspace=breakout-area-server\" \"npm run dev --workspace=breakout-area-client\"",
+        "seed": "npm run seed --workspace=breakout-area-server",
+        "build": "npm run build --workspace=breakout-area-client",
+        "start": "npm start --workspace=breakout-area-server"
     },
     "devDependencies": {
         "concurrently": "^8.2.2"

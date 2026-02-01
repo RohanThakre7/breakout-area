@@ -1,5 +1,18 @@
 {
     "version": 2,
+    "builds": [
+        {
+            "src": "server/server.js",
+            "use": "@vercel/node"
+        },
+        {
+            "src": "client/package.json",
+            "use": "@vercel/static-build",
+            "config": {
+                "distDir": "dist"
+            }
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/(.*)",
@@ -11,7 +24,12 @@
         },
         {
             "source": "/(.*)",
-            "destination": "/client/dist/$1"
+            "destination": "client/$1",
+            "check": true
+        },
+        {
+            "source": "/(.*)",
+            "destination": "client/index.html"
         }
     ]
 }
