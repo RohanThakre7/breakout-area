@@ -1,4 +1,4 @@
-# SocialHub
+# Breakout area
 
 A production-ready social media app built with the MERN stack.
 
