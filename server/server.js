@@ -122,11 +122,11 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-if (process.env.NODE_ENV !== 'test') {
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
     server.listen(PORT, () => {
         logger.info(`Server running on port ${PORT}`);
     });
 }
 
-module.exports = { app, io, logger };
+module.exports = app;
