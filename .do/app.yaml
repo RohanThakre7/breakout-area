@@ -1,0 +1,36 @@
+name: breakout-area
+region: nyc
+services:
+- name: social-web
+  environment_slug: node-js
+  github:
+    branch: main
+    repo: RohanThakre7/Community-Complex
+  build_command: npm run build
+  run_command: npm start
+  http_port: 5000
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  health_check:
+    http_path: /api/auth/me
+    initial_delay_seconds: 10
+    period_seconds: 10
+env_vars:
+- key: NODE_ENV
+  scope: RUN_TIME
+  value: production
+- key: MONGODB_URI
+  scope: RUN_TIME
+  type: SECRET
+- key: JWT_SECRET
+  scope: RUN_TIME
+  type: SECRET
+- key: CLOUDINARY_CLOUD_NAME
+  scope: RUN_TIME
+- key: CLOUDINARY_API_KEY
+  scope: RUN_TIME
+- key: CLOUDINARY_API_SECRET
+  scope: RUN_TIME
+  type: SECRET
