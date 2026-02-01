@@ -1,4 +1,4 @@
-# SocialHub
+# Breakout Area
 
 A production-ready social media app built with the MERN stack.
 
@@ -24,7 +24,7 @@ A production-ready social media app built with the MERN stack.
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/RohanThakre7/Community-Complex.git
-cd SocialHub
+cd breakout-area
 ```
 
 ### 2. Backend Setup

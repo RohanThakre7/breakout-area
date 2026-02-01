@@ -25,6 +25,24 @@ export const createPost = createAsyncThunk('posts/createPost', async (postData, 
     }
 });
 
+export const deletePost = createAsyncThunk('posts/deletePost', async (postId, { rejectWithValue }) => {
+    try {
+        await axios.delete(`/api/posts/${postId}`);
+        return postId;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
+export const updatePost = createAsyncThunk('posts/updatePost', async ({ postId, updates }, { rejectWithValue }) => {
+    try {
+        const response = await axios.put(`/api/posts/${postId}`, updates);
+        return response.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+});
+
 const postSlice = createSlice({
     name: 'posts',
     initialState,
@@ -46,6 +64,15 @@ const postSlice = createSlice({
             })
             .addCase(createPost.fulfilled, (state, action) => {
                 state.posts.unshift(action.payload);
+            })
+            .addCase(deletePost.fulfilled, (state, action) => {
+                state.posts = state.posts.filter(post => post._id !== action.payload);
+            })
+            .addCase(updatePost.fulfilled, (state, action) => {
+                const index = state.posts.findIndex(post => post._id === action.payload._id);
+                if (index !== -1) {
+                    state.posts[index] = action.payload;
+                }
             });
     },
 });

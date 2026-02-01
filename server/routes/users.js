@@ -4,6 +4,7 @@ const userController = require('../controllers/userController');
 const auth = require('../middlewares/auth');
 
 router.get('/search', userController.searchUsers);
+router.get('/suggestions', auth, userController.getSuggestions);
 router.get('/:id', userController.getProfile);
 router.put('/me', auth, userController.updateProfile);
 router.post('/follow/:id', auth, userController.followUser);

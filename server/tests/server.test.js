@@ -5,6 +5,6 @@ describe('GET /', () => {
     it('should return 200 OK', async () => {
         const response = await request(app).get('/');
         expect(response.status).toBe(200);
-        expect(response.text).toContain('SocialHub API is running');
+        expect(response.text).toContain('Breakout area API is running');
     });
 });

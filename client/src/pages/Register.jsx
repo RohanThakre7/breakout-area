@@ -31,72 +31,91 @@ const Register = () => {
     };
 
     return (
-        <div className="max-w-md mx-auto mt-16 bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-700">
-            <h2 className="text-3xl font-bold mb-6 text-center text-white">Join SocialHub</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm font-medium mb-1">Full Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        placeholder="John Doe"
-                        required
-                    />
+        <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="w-full max-w-md animate-fade-in py-10">
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl font-black bg-gradient-to-r from-amber-200 to-yellow-500 bg-clip-text text-transparent mb-2">
+                        Breakout area
+                    </h1>
+                    <p className="text-slate-500 font-medium">Join the community and start sharing!</p>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Username</label>
-                    <input
-                        type="text"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        placeholder="johndoe"
-                        required
-                    />
+
+                <div className="glass-card p-8 rounded-3xl shadow-2xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-amber-600/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                    <h2 className="text-2xl font-bold mb-8 text-white">Create Account</h2>
+
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-slate-400 uppercase tracking-widest pl-1">Full Name</label>
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-500/50 outline-none transition-all text-white placeholder-slate-600"
+                                placeholder="John Doe"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-slate-400 uppercase tracking-widest pl-1">Username</label>
+                            <input
+                                type="text"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange}
+                                className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-500/50 outline-none transition-all text-white placeholder-slate-600"
+                                placeholder="johndoe"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-slate-400 uppercase tracking-widest pl-1">Email Address</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-500/50 outline-none transition-all text-white placeholder-slate-600"
+                                placeholder="you@example.com"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-black text-slate-400 uppercase tracking-widest pl-1">Password</label>
+                            <input
+                                type="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-5 py-3 focus:ring-2 focus:ring-amber-500/50 outline-none transition-all text-white placeholder-slate-600"
+                                placeholder="••••••••"
+                                minLength="6"
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-95 disabled:opacity-50 mt-4"
+                        >
+                            {loading ? 'Creating Account...' : 'Get Started'}
+                        </button>
+                    </form>
+
+                    <p className="mt-8 text-center text-slate-500 font-medium font-sm">
+                        Already have an account?{' '}
+                        <Link to="/login" className="text-amber-400 hover:text-amber-300 transition-colors font-bold">
+                            Sign In
+                        </Link>
+                    </p>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        placeholder="you@example.com"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium mb-1">Password</label>
-                    <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                        placeholder="•••••••• (min 6 chars)"
-                        minLength="6"
-                        required
-                    />
-                </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
-                >
-                    {loading ? 'Creating Account...' : 'Register'}
-                </button>
-            </form>
-            <p className="mt-6 text-center text-slate-400">
-                Already have an account?{' '}
-                <Link to="/login" className="text-blue-400 hover:underline">
-                    Login here
-                </Link>
-            </p>
+            </div>
         </div>
     );
 };

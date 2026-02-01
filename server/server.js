@@ -5,7 +5,6 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const http = require('http');
 const { Server } = require('socket.io');
-const winston = require('winston');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -13,7 +12,15 @@ const postRoutes = require('./routes/posts');
 const notificationRoutes = require('./routes/notifications');
 const uploadRoutes = require('./routes/uploads');
 const path = require('path');
+const fs = require('fs');
 const { setIo } = require('./services/notificationService');
+const logger = require('./utils/logger');
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir);
+}
 
 dotenv.config();
 
@@ -28,21 +35,23 @@ const io = new Server(server, {
 
 setIo(io);
 
-// Logger
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' }),
-    ],
-});
-
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "https://ui-avatars.com", "https://*.gravatar.com", "https://res.cloudinary.com"],
+        },
+    },
+}));
 app.use(cors());
 app.use(express.json());
+
+// Request logging middleware
+app.use((req, res, next) => {
+    logger.info(`${req.method} ${req.url}`);
+    next();
+});
 
 // Rate Limiting
 const limiter = rateLimit({
@@ -55,30 +64,57 @@ app.use('/api/', limiter);
 io.on('connection', (socket) => {
     logger.info(`User connected: ${socket.id}`);
 
+    socket.on('join', (userId) => {
+        socket.join(userId);
+        logger.info(`User ${userId} joined room`);
+    });
+
+    socket.on('join_chat', (room) => {
+        socket.join(room);
+        logger.info(`User ${socket.id} joined chat room: ${room}`);
+    });
+
     socket.on('disconnect', () => {
         logger.info(`User disconnected: ${socket.id}`);
     });
 });
 
-// DB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/socialhub';
-mongoose.connect(MONGODB_URI)
-    .then(() => logger.info('Connected to MongoDB'))
-    .catch(err => logger.error('MongoDB connection error:', err));
+if (process.env.NODE_ENV !== 'test') {
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/breakout_area';
+    mongoose.connect(MONGODB_URI)
+        .then(() => logger.info('Connected to MongoDB'))
+        .catch(err => logger.error('MongoDB connection error:', err));
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/messages', require('./routes/messages'));
 app.use('/api/upload', uploadRoutes);
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.get('/', (req, res) => {
-    res.send('SocialHub API is running...');
-});
+// Serve frontend in production
+const distPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(distPath)) {
+    app.use(express.static(distPath));
+
+    app.get('*', (req, res) => {
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.join(distPath, 'index.html'));
+        } else {
+            // If it's an API route that wasn't matched
+            res.status(404).send({ error: 'API endpoint not found' });
+        }
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.send('Breakout area API is running... (Frontend build not found)');
+    });
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -86,9 +122,11 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-    logger.info(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+        logger.info(`Server running on port ${PORT}`);
+    });
+}
 
-module.exports = { app, io };
+module.exports = { app, io, logger };

@@ -1,7 +1,7 @@
 {
-  "name": "socialhub-server",
+  "name": "breakout-area-server",
   "version": "1.0.0",
-  "description": "SocialHub Backend",
+  "description": "Breakout Area Backend",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.41.3",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -20,6 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "multer": "^1.4.5-lts.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "socket.io": "^4.7.2",
     "winston": "^3.11.0"
   },
@@ -27,7 +29,7 @@
     "eslint": "^8.56.0",
     "jest": "^29.7.0",
     "nodemon": "^3.0.2",
-    "supertest": "^6.3.3",
-    "prettier": "^3.1.1"
+    "prettier": "^3.1.1",
+    "supertest": "^6.3.3"
   }
 }

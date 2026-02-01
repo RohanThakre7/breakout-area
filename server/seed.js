@@ -1,69 +1,73 @@
 const mongoose = require('mongoose');
 const User = require('./models/User');
 const Post = require('./models/Post');
-const dotenv = require('dotenv');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
 
-dotenv.config();
-
-const users = [
-    {
-        name: 'Admin User',
-        username: 'admin',
-        email: 'admin@socialhub.com',
-        password: 'password123',
-        bio: 'I am the admin of SocialHub.',
-    },
-    {
-        name: 'Jane Doe',
-        username: 'janedoe',
-        email: 'jane@example.com',
-        password: 'password123',
-        bio: 'Software engineer and cat lover.',
-    },
-    {
-        name: 'Bob Smith',
-        username: 'bobsmith',
-        email: 'bob@example.com',
-        password: 'password123',
-        bio: 'Traveler and foodie.',
-    }
-];
-
-const seedDB = async () => {
+const seedData = async () => {
     try {
-        const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/socialhub';
-        await mongoose.connect(MONGODB_URI);
-        console.log('Connected to DB for seeding');
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('Connected to MongoDB for seeding...');
 
-        await User.deleteMany({});
-        await Post.deleteMany({});
-
-        const createdUsers = await User.create(users);
-        console.log('Users seeded');
-
-        const posts = [
+        // Demo User Details
+        const demoUsers = [
             {
-                author: createdUsers[0]._id,
-                text: 'Welcome to SocialHub! This is the first post.',
+                name: 'Alex Rivera',
+                username: 'arivera',
+                email: 'alex@example.com',
+                password: 'password123',
+                bio: 'Passionate about digital art and UI/UX design. Tech enthusiast.'
             },
             {
-                author: createdUsers[1]._id,
-                text: 'Just joined! Looking forward to connecting with everyone.',
+                name: 'Sarah Chen',
+                username: 'schen_dev',
+                email: 'sarah@example.com',
+                password: 'password123',
+                bio: 'Fullstack developer by day, competitive gamer by night. 🚀'
             },
             {
-                author: createdUsers[2]._id,
-                text: 'Lunch was amazing today! #foodie',
+                name: 'Marcus Thorne',
+                username: 'mthorne',
+                email: 'marcus@example.com',
+                password: 'password123',
+                bio: 'Coffee lover, photographer, and world traveler. Living life one frame at a time.'
             }
         ];
 
-        await Post.create(posts);
-        console.log('Posts seeded');
+        for (const userData of demoUsers) {
+            // Check if user exists
+            let user = await User.findOne({ email: userData.email });
+            if (!user) {
+                user = new User(userData);
+                await user.save();
+                console.log(`Created user: ${user.username}`);
 
+                // Create 2-3 posts for each user
+                const posts = [
+                    { text: `Hello everyone! Excited to be part of the Breakout Area. #firstpost` },
+                    { text: `Just finished a new project! The monochrome aesthetic is really growing on me.` },
+                    { text: `Nothing beats a good cup of coffee while coding at 2 AM. ☕️` }
+                ];
+
+                for (const postData of posts) {
+                    const post = new Post({
+                        ...postData,
+                        author: user._id
+                    });
+                    await post.save();
+                }
+                console.log(`Created default posts for ${user.username}`);
+            } else {
+                console.log(`User ${user.username} already exists, skipping...`);
+            }
+        }
+
+        console.log('Seeding completed successfully!');
         process.exit();
-    } catch (err) {
-        console.error(err);
+    } catch (error) {
+        console.error('Error seeding database:', error);
         process.exit(1);
     }
 };
 
-seedDB();
+seedData();

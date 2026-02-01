@@ -68,6 +68,21 @@ exports.followUser = async (req, res) => {
     }
 };
 
+exports.getSuggestions = async (req, res) => {
+    try {
+        // Find users not in the current user's following list and not the user themselves
+        const users = await User.find({
+            _id: { $nin: [...req.user.following, req.user._id] }
+        })
+            .select('username name avatarUrl bio')
+            .limit(5);
+
+        res.send(users);
+    } catch (e) {
+        res.status(500).send({ error: e.message });
+    }
+};
+
 exports.searchUsers = async (req, res) => {
     try {
         const query = req.query.q;

@@ -120,6 +120,30 @@ exports.getComments = async (req, res) => {
     }
 };
 
+exports.updatePost = async (req, res) => {
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['text']; // Add 'images' if we want to allow image updates later
+    const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
+
+    if (!isValidOperation) {
+        return res.status(400).send({ error: 'Invalid updates!' });
+    }
+
+    try {
+        const post = await Post.findOne({ _id: req.params.id, author: req.user._id });
+
+        if (!post) {
+            return res.status(404).send();
+        }
+
+        updates.forEach((update) => post[update] = req.body[update]);
+        await post.save();
+        res.send(post);
+    } catch (e) {
+        res.status(400).send(e);
+    }
+};
+
 exports.deletePost = async (req, res) => {
     try {
         const post = await Post.findOneAndDelete({ _id: req.params.id, author: req.user._id });
