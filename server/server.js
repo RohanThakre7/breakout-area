@@ -97,9 +97,9 @@ app.use('/api/upload', uploadRoutes);
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Serve frontend in production
+// Serve frontend in production (Only if NOT on Vercel)
 const distPath = path.join(__dirname, '../client/dist');
-if (fs.existsSync(distPath)) {
+if (!process.env.VERCEL && fs.existsSync(distPath)) {
     app.use(express.static(distPath));
 
     app.get('*', (req, res) => {
@@ -110,7 +110,7 @@ if (fs.existsSync(distPath)) {
             res.status(404).send({ error: 'API endpoint not found' });
         }
     });
-} else {
+} else if (!process.env.VERCEL) {
     app.get('/', (req, res) => {
         res.send('Breakout area API is running... (Frontend build not found)');
     });
