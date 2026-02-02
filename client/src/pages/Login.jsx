@@ -18,7 +18,10 @@ const Login = () => {
             toast.success('Welcome back!');
             navigate('/');
         } else {
-            toast.error(result.payload?.error || 'Login failed');
+            const errorMsg = typeof result.payload?.error === 'object'
+                ? JSON.stringify(result.payload.error)
+                : (result.payload?.error || 'Login failed');
+            toast.error(errorMsg);
         }
     };
 
