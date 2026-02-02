@@ -50,8 +50,13 @@ io.on('connection', (socket) => {
 
 // Database Connection
 const MONGODB_URI = process.env.MONGODB_URI;
+const isProduction = process.env.NODE_ENV === 'production';
+
 if (!MONGODB_URI) {
     logger.error('CRITICAL: MONGODB_URI is not defined in process.env');
+} else if (isProduction && (MONGODB_URI.includes('127.0.0.1') || MONGODB_URI.includes('localhost'))) {
+    logger.error('CRITICAL: MONGODB_URI is pointing to localhost in PRODUCTION!');
+    logger.error('Please update your Render Environment Variables with your MongoDB Atlas string.');
 } else {
     logger.info(`Attempting to connect to database: ${MONGODB_URI.substring(0, 15)}...`);
     mongoose.connect(MONGODB_URI, {
