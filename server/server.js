@@ -58,8 +58,17 @@ const connectToDatabase = async () => {
     }
     const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/breakout_area';
     logger.info('Connecting to MongoDB...');
+
+    // If a connection is already in progress, wait for it
+    if (mongoose.connection.readyState === 2) {
+        await new Promise((resolve) => {
+            mongoose.connection.once('connected', resolve);
+        });
+        return mongoose;
+    }
+
     cachedDb = await mongoose.connect(MONGODB_URI, {
-        bufferCommands: false, // Disable mongoose buffering
+        bufferCommands: true, // Re-enable for safety, but we await anyway
     });
     return cachedDb;
 };
