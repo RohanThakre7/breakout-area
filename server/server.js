@@ -51,14 +51,18 @@ io.on('connection', (socket) => {
 // Database Connection
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-    logger.error('MONGODB_URI is not defined');
+    logger.error('CRITICAL: MONGODB_URI is not defined in process.env');
 } else {
+    logger.info(`Attempting to connect to database: ${MONGODB_URI.substring(0, 15)}...`);
     mongoose.connect(MONGODB_URI, {
-        serverSelectionTimeoutMS: 5000, // Fail after 5s instead of 30s
+        serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
     })
         .then(() => logger.info('Connected to MongoDB Successfully'))
-        .catch(err => logger.error('CRITICAL: MongoDB connection error:', err));
+        .catch(err => {
+            logger.error('CRITICAL: MongoDB connection error:', err);
+            logger.error(`Failed URI: ${MONGODB_URI.substring(0, 15)}...`);
+        });
 }
 
 // Middleware
