@@ -16,24 +16,27 @@ const fs = require('fs');
 const { setIo } = require('./services/notificationService');
 const logger = require('./utils/logger');
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (Only if NOT on Vercel)
 const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
+if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
 
 dotenv.config();
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: process.env.CLIENT_URL || "http://localhost:5173",
-        methods: ["GET", "POST"]
-    }
-});
+let server = app; // Default to app for Vercel
 
-setIo(io);
+if (!process.env.VERCEL) {
+    server = http.createServer(app);
+    const io = new Server(server, {
+        cors: {
+            origin: process.env.CLIENT_URL || "http://localhost:5173",
+            methods: ["GET", "POST"]
+        }
+    });
+    setIo(io);
+}
 
 // Middleware
 app.use(helmet({
