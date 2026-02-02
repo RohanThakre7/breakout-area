@@ -24,7 +24,9 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
+    console.log('App State:', { hasToken: !!token, hasUser: !!user });
     if (token && !user) {
+      console.log('Fetching user profile...');
       dispatch(fetchUser());
     }
   }, [token, user, dispatch]);
