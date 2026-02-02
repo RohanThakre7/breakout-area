@@ -23,6 +23,8 @@ export const initiateSocket = (token, dispatch, userId) => {
     return socket;
 };
 
+export const getSocket = () => socket;
+
 export const disconnectSocket = () => {
     if (socket) {
         console.log('Disconnecting socket...');
