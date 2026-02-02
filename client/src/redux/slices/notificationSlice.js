@@ -12,7 +12,7 @@ export const fetchNotifications = createAsyncThunk('notifications/fetch', async 
         const response = await axios.get('/api/notifications');
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 

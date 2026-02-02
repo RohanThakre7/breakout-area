@@ -12,7 +12,7 @@ export const fetchFeed = createAsyncThunk('posts/fetchFeed', async (_, { rejectW
         const response = await axios.get('/api/posts/feed');
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -21,7 +21,7 @@ export const createPost = createAsyncThunk('posts/createPost', async (postData, 
         const response = await axios.post('/api/posts', postData);
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -30,7 +30,7 @@ export const deletePost = createAsyncThunk('posts/deletePost', async (postId, { 
         await axios.delete(`/api/posts/${postId}`);
         return postId;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -39,7 +39,7 @@ export const updatePost = createAsyncThunk('posts/updatePost', async ({ postId, 
         const response = await axios.put(`/api/posts/${postId}`, updates);
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 

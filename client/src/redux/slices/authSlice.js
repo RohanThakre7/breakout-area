@@ -13,7 +13,7 @@ export const register = createAsyncThunk('auth/register', async (userData, { rej
         const response = await axios.post('/api/auth/register', userData);
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -22,7 +22,7 @@ export const login = createAsyncThunk('auth/login', async (userData, { rejectWit
         const response = await axios.post('/api/auth/login', userData);
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -31,7 +31,7 @@ export const fetchUser = createAsyncThunk('auth/fetchUser', async (_, { rejectWi
         const response = await axios.get('/api/auth/me');
         return response.data;
     } catch (error) {
-        return rejectWithValue(error.response.data);
+        return rejectWithValue(error.response?.data || error.message);
     }
 });
 
@@ -59,7 +59,7 @@ const authSlice = createSlice({
             })
             .addCase(login.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload?.error || 'Login failed';
+                state.error = action.payload?.error || action.payload || 'Login failed';
             })
             .addCase(register.pending, (state) => { state.loading = true; })
             .addCase(register.fulfilled, (state, action) => {
@@ -70,7 +70,7 @@ const authSlice = createSlice({
             })
             .addCase(register.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.payload?.error || 'Registration failed';
+                state.error = action.payload?.error || action.payload || 'Registration failed';
             })
             .addCase(fetchUser.fulfilled, (state, action) => {
                 state.loading = false;
