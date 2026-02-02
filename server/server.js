@@ -16,13 +16,13 @@ const fs = require('fs');
 const { setIo } = require('./services/notificationService');
 const logger = require('./utils/logger');
 
+dotenv.config();
+
 // Ensure uploads directory exists (Only if NOT on Vercel)
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!process.env.VERCEL && !fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
-
-dotenv.config();
 
 const app = express();
 let server = app; // Default to app for Vercel
@@ -36,6 +36,54 @@ if (!process.env.VERCEL) {
         }
     });
     setIo(io);
+
+    // Socket.io logic (Only if NOT on Vercel)
+    io.on('connection', (socket) => {
+        logger.info(`User connected: ${socket.id}`);
+        socket.on('join', (userId) => {
+            socket.join(userId);
+            logger.info(`User ${userId} joined room`);
+        });
+        socket.on('disconnect', () => {
+            logger.info(`User disconnected: ${socket.id}`);
+        });
+    });
+}
+
+// Database Connection Logic (Cached for Serverless)
+let cachedDb = null;
+const connectToDatabase = async () => {
+    if (cachedDb && mongoose.connection.readyState === 1) {
+        return cachedDb;
+    }
+    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/breakout_area';
+    logger.info('Connecting to MongoDB...');
+    cachedDb = await mongoose.connect(MONGODB_URI, {
+        bufferCommands: false, // Disable mongoose buffering
+    });
+    return cachedDb;
+};
+
+// Middleware to ensure DB connection on every request (Vercel optimization)
+app.use(async (req, res, next) => {
+    if (process.env.VERCEL) {
+        try {
+            await connectToDatabase();
+            next();
+        } catch (err) {
+            logger.error('Database connection error:', err);
+            return res.status(500).json({ error: 'Database connection failed', details: err.message });
+        }
+    } else {
+        next();
+    }
+});
+
+// Regular DB connection for non-serverless environments
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+    connectToDatabase()
+        .then(() => logger.info('Connected to MongoDB'))
+        .catch(err => logger.error('MongoDB connection error:', err));
 }
 
 // Middleware
@@ -50,44 +98,12 @@ app.use(helmet({
 app.use(cors());
 app.use(express.json());
 
-// Request logging middleware
-app.use((req, res, next) => {
-    logger.info(`${req.method} ${req.url}`);
-    next();
-});
-
 // Rate Limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100 // limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100
 });
 app.use('/api/', limiter);
-
-// Socket.io
-io.on('connection', (socket) => {
-    logger.info(`User connected: ${socket.id}`);
-
-    socket.on('join', (userId) => {
-        socket.join(userId);
-        logger.info(`User ${userId} joined room`);
-    });
-
-    socket.on('join_chat', (room) => {
-        socket.join(room);
-        logger.info(`User ${socket.id} joined chat room: ${room}`);
-    });
-
-    socket.on('disconnect', () => {
-        logger.info(`User disconnected: ${socket.id}`);
-    });
-});
-
-if (process.env.NODE_ENV !== 'test') {
-    const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/breakout_area';
-    mongoose.connect(MONGODB_URI)
-        .then(() => logger.info('Connected to MongoDB'))
-        .catch(err => logger.error('MongoDB connection error:', err));
-}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -104,25 +120,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const distPath = path.join(__dirname, '../client/dist');
 if (!process.env.VERCEL && fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-
     app.get('*', (req, res) => {
         if (!req.path.startsWith('/api')) {
             res.sendFile(path.join(distPath, 'index.html'));
-        } else {
-            // If it's an API route that wasn't matched
-            res.status(404).send({ error: 'API endpoint not found' });
         }
-    });
-} else if (!process.env.VERCEL) {
-    app.get('/', (req, res) => {
-        res.send('Breakout area API is running... (Frontend build not found)');
     });
 }
 
-// Error handling middleware
+// Error handling
 app.use((err, req, res, next) => {
     logger.error(err.stack);
-    res.status(500).send('Something broke!');
+    res.status(500).send({ error: 'Internal Server Error', stack: err.stack });
 });
 
 if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
