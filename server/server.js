@@ -52,9 +52,12 @@ const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
     logger.error('MONGODB_URI is not defined');
 } else {
-    mongoose.connect(MONGODB_URI)
+    mongoose.connect(MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Fail after 5s instead of 30s
+        socketTimeoutMS: 45000,
+    })
         .then(() => logger.info('Connected to MongoDB Successfully'))
-        .catch(err => logger.error('MongoDB connection error:', err));
+        .catch(err => logger.error('CRITICAL: MongoDB connection error:', err));
 }
 
 // Middleware
